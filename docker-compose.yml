@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: gopher
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports: 
+      - 8080:8080
+    tty: true
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: gopher-db
+    image: mysql:5.7
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      MYSQL_TABLE: gopherbank
+    ports:
+      - 3306:3306
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+    hostname: db
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root
