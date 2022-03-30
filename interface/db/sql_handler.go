@@ -11,7 +11,7 @@ type Result interface {
 }
 
 type Row interface {
-	Scan(dest ...interface{}) error
+	Scan(...interface{}) error
 	Next() bool
 	Close() error
 }

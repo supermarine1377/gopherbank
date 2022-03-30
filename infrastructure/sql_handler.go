@@ -66,12 +66,12 @@ func (handler SqlHandler) Query(statement string, args ...interface{}) (db.Row, 
 	return SqlRows{Rows: rows}, nil
 }
 
-func (sqlRows SqlRows) LastInsertId() (int64, error) {
-	return sqlRows.LastInsertId()
+func (sqlResult SqlResult) LastInsertId() (int64, error) {
+	return sqlResult.LastInsertId()
 }
 
-func (sqlRows SqlRows) RowsAffected() (int64, error) {
-	return sqlRows.RowsAffected()
+func (sqlResult SqlResult) RowsAffected() (int64, error) {
+	return sqlResult.RowsAffected()
 }
 
 func (sqlRows SqlRows) Scan(dest ...interface{}) error {
