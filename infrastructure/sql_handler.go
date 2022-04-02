@@ -28,7 +28,7 @@ func NewSqlHandler() *SqlHandler {
 	return &SqlHandler{Comn: comn}
 }
 
-func (handler SqlHandler) Excute(statement string, args ...interface{}) (db.Result, error) {
+func (handler *SqlHandler) Excute(statement string, args ...interface{}) (db.Result, error) {
 	tx, err := handler.Comn.Begin()
 	defer tx.Rollback()
 	if err != nil {
@@ -47,7 +47,7 @@ func (handler SqlHandler) Excute(statement string, args ...interface{}) (db.Resu
 	return result, nil
 }
 
-func (handler SqlHandler) Query(statement string, args ...interface{}) (db.Row, error) {
+func (handler *SqlHandler) Query(statement string, args ...interface{}) (db.Row, error) {
 	tx, err := handler.Comn.Begin()
 	defer tx.Rollback()
 	if err != nil {

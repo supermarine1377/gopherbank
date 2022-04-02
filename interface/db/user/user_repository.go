@@ -12,11 +12,7 @@ type UserRepository struct {
 
 func (repo UserRepository) Store(u domain.User) error {
 	statement := fmt.Sprintf(`insert into users (name, balance, is_deleted) values ('%s', %d, false);`, u.Name, u.Balance)
-	result, err := repo.SqlHandler.Excute(statement)
-	if err != nil {
-		return err
-	}
-	_, err = result.LastInsertId()
+	_, err := repo.SqlHandler.Excute(statement)
 	if err != nil {
 		return err
 	}

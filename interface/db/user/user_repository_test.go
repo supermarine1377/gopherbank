@@ -4,7 +4,10 @@ import (
 	"reflect"
 	"supermarine1377/domain"
 	"supermarine1377/interface/db"
+	mock_db "supermarine1377/interface/db/mock"
 	"testing"
+
+	"github.com/golang/mock/gomock"
 )
 
 func TestUserRepository_Store(t *testing.T) {
@@ -33,8 +36,13 @@ func TestUserRepository_Store(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var repo = UserRepository{SqlHandler: MockSqlHandler{}}
-			if err := repo.Store(tt.args.u); (err != nil) != tt.wantErr {
+			ctrl := gomock.NewController(t)
+			msh := mock_db.NewMockSqlHandler(ctrl)
+			var user = domain.User{Name: "test", Balance: 1000}
+			var mr = mock_db.NewMockResult(ctrl)
+			msh.EXPECT().Excute(gomock.Any()).Return(mr, nil)
+			var repo = UserRepository{SqlHandler: msh}
+			if err := repo.Store(user); (err != nil) != tt.wantErr {
 				t.Errorf("UserRepository.Store() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -107,8 +115,13 @@ func TestUserRepository_FindAll(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			msh := mock_db.NewMockSqlHandler(ctrl)
+			mr := mock_db.NewMockRow(ctrl)
+			msh.EXPECT().Query(gomock.Any()).Return(mr, nil)
+			mr.EXPECT().Next().Return(false)
 			repo := UserRepository{
-				SqlHandler: tt.fields.SqlHandler,
+				SqlHandler: msh,
 			}
 			got, err := repo.FindAll()
 			if (err != nil) != tt.wantErr {
@@ -140,40 +153,4 @@ func TestUserRepository_Delete(t *testing.T) {
 			repo.Delete()
 		})
 	}
-}
-
-type MockSqlHandler struct {
-	queryUserResult []domain.User
-}
-
-type MockResult struct{}
-
-type MockRow struct{}
-
-func (msh MockSqlHandler) Excute(string, ...interface{}) (db.Result, error) {
-	return MockResult{}, nil
-}
-
-func (msh MockSqlHandler) Query(s string, args ...interface{}) (db.Row, error) {
-	return MockRow{}, nil
-}
-
-func (mr MockResult) LastInsertId() (int64, error) {
-	return 0, nil
-}
-
-func (mr MockResult) RowsAffected() (int64, error) {
-	return 0, nil
-}
-
-func (mr MockRow) Scan(dest ...interface{}) error {
-	return nil
-}
-
-func (mr MockRow) Next() bool {
-	return true
-}
-
-func (mr MockRow) Close() error {
-	return nil
 }
