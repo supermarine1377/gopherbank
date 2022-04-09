@@ -13,3 +13,7 @@ func (uu UserUseCase) Add(u domain.User) error {
 func (uu UserUseCase) FindAll() ([]domain.User, error) {
 	return uu.Repository.FindAll()
 }
+
+func (uu UserUseCase) FindById(id int) (*domain.User, error) {
+	return uu.Repository.FindById(id)
+}

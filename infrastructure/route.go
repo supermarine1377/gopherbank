@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
+	"strings"
 	"supermarine1377/domain"
 	"supermarine1377/interface/controller"
 	"supermarine1377/interface/db"
@@ -20,6 +22,7 @@ func Route(sql db.SqlHandler) {
 		fmt.Fprint(rw, "pong")
 	})
 	http.HandleFunc("/users", userHandlerFunc)
+	http.HandleFunc("/users/", userGetHandlerFunc)
 	http.HandleFunc("/transactions", transactionHandlerFunc)
 	http.ListenAndServe(":8080", nil)
 	log.Printf("listening...")
@@ -51,14 +54,34 @@ func userHandlerFunc(rw http.ResponseWriter, r *http.Request) {
 	} else if method == "PUT" {
 		rw.WriteHeader(http.StatusOK)
 	} else if method == "GET" {
+		enc := json.NewEncoder(rw)
+		// GET /users/
 		users, err := userController.FindAll()
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		enc := json.NewEncoder(rw)
 		enc.Encode(&users)
-		// rw.WriteHeader(http.StatusOK)
+	} else {
+		rw.WriteHeader(http.StatusMethodNotAllowed)
+	}
+}
+
+func userGetHandlerFunc(rw http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		prx := strings.TrimPrefix(r.URL.Path, "/users/")
+		id, err := strconv.Atoi(prx)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		user, err := userController.FindById(id)
+		if err != nil {
+			rw.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		enc := json.NewEncoder(rw)
+		enc.Encode(&user)
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
 	}

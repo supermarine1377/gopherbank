@@ -52,13 +52,10 @@ func TestUserRepository_Update(t *testing.T) {
 	type fields struct {
 		SqlHandler db.SqlHandler
 	}
-	type args struct {
-		u domain.User
-	}
 	tests := []struct {
 		name   string
 		fields fields
-		args   args
+		args   int
 	}{
 		// TODO: Add test cases.
 	}
@@ -67,7 +64,7 @@ func TestUserRepository_Update(t *testing.T) {
 			repo := UserRepository{
 				SqlHandler: tt.fields.SqlHandler,
 			}
-			repo.Update(tt.args.u)
+			repo.Update(tt.args)
 		})
 	}
 }

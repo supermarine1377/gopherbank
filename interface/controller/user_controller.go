@@ -28,3 +28,7 @@ func (controller UserController) Add(user domain.User) error {
 func (controller UserController) FindAll() ([]domain.User, error) {
 	return controller.usecase.FindAll()
 }
+
+func (controller UserController) FindById(id int) (*domain.User, error) {
+	return controller.usecase.FindById(id)
+}
