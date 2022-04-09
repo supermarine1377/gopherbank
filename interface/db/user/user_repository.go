@@ -1,7 +1,6 @@
 package user
 
 import (
-	"fmt"
 	"supermarine1377/domain"
 	"supermarine1377/interface/db"
 )
@@ -11,8 +10,7 @@ type UserRepository struct {
 }
 
 func (repo UserRepository) Store(u domain.User) error {
-	statement := fmt.Sprintf(`insert into users (name, balance, is_deleted) values ('%s', %d, false);`, u.Name, u.Balance)
-	_, err := repo.SqlHandler.Excute(statement)
+	_, err := repo.SqlHandler.Excute("insert into users (name, balance, is_deleted) values (?, ?, ?)", u.Name, u.Balance, false)
 	if err != nil {
 		return err
 	}
@@ -28,24 +26,17 @@ func (repo UserRepository) FindById(id int) {
 }
 
 func (repo UserRepository) FindAll() ([]domain.User, error) {
-	statement := "select id, name, balance from users where is_deleted = false"
-	row, err := repo.SqlHandler.Query(statement)
+	rows, err := repo.SqlHandler.Query("select id, name, balance from users where is_deleted = ?;", false)
 	if err != nil {
 		return nil, err
 	}
 	var users []domain.User
-	for row.Next() {
-		var id int
-		var name string
-		var balance int
-		if err := row.Scan(&id, &name, &balance); err != nil {
-			continue
+	for rows.Next() {
+		var user domain.User
+		if err := rows.Scan(&user.ID, &user.Name, &user.Balance); err != nil {
+			return users, err
 		}
-		users = append(users, domain.User{
-			ID:      id,
-			Name:    name,
-			Balance: balance,
-		})
+		users = append(users, user)
 	}
 	return users, nil
 }

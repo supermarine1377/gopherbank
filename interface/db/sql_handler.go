@@ -1,4 +1,3 @@
-//go:generate mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 package db
 
 type SqlHandler interface {
@@ -12,7 +11,11 @@ type Result interface {
 }
 
 type Row interface {
-	Scan(...interface{}) error
+	Scan(dest ...interface{}) error
 	Next() bool
 	Close() error
+}
+
+func DoInTx() {
+
 }

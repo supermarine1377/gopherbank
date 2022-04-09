@@ -20,6 +20,10 @@ type SqlRows struct {
 	Rows *sql.Rows
 }
 
+type Transaction struct {
+	tx *sql.Tx
+}
+
 func NewSqlHandler() *SqlHandler {
 	comn, err := sql.Open("mysql", "root:password@tcp(127.0.0.1)/gopherbank")
 	if err != nil {
@@ -48,18 +52,9 @@ func (handler *SqlHandler) Excute(statement string, args ...interface{}) (db.Res
 }
 
 func (handler *SqlHandler) Query(statement string, args ...interface{}) (db.Row, error) {
-	tx, err := handler.Comn.Begin()
-	defer tx.Rollback()
+	// rows, err := tx.Query(statement, args...)
+	rows, err := handler.Comn.Query(statement, args...)
 	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	rows, err := tx.Query(statement, args)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	if err := tx.Commit(); err != nil {
 		log.Println(err)
 		return nil, err
 	}
@@ -75,7 +70,7 @@ func (sqlResult SqlResult) RowsAffected() (int64, error) {
 }
 
 func (sqlRows SqlRows) Scan(dest ...interface{}) error {
-	return sqlRows.Rows.Scan(dest)
+	return sqlRows.Rows.Scan(dest...)
 }
 
 func (sqlRows SqlRows) Next() bool {
@@ -84,4 +79,25 @@ func (sqlRows SqlRows) Next() bool {
 
 func (sqlRows SqlRows) Close() error {
 	return sqlRows.Rows.Close()
+}
+
+func (handler *SqlHandler) DoInTx(f func() (interface{}, error)) (interface{}, error) {
+	tx, err := handler.Comn.Begin()
+	defer func() {
+		err := tx.Rollback()
+		if err != nil {
+			log.Println(err)
+		}
+	}()
+	if err != nil {
+		return nil, err
+	}
+	r, err := f()
+	if err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return r, nil
 }

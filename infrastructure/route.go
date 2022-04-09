@@ -58,7 +58,7 @@ func userHandlerFunc(rw http.ResponseWriter, r *http.Request) {
 		}
 		enc := json.NewEncoder(rw)
 		enc.Encode(&users)
-		rw.WriteHeader(http.StatusOK)
+		// rw.WriteHeader(http.StatusOK)
 	} else {
 		rw.WriteHeader(http.StatusMethodNotAllowed)
 	}

@@ -38,11 +38,10 @@ func TestUserRepository_Store(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			msh := mock_db.NewMockSqlHandler(ctrl)
-			var user = domain.User{Name: "test", Balance: 1000}
 			var mr = mock_db.NewMockResult(ctrl)
-			msh.EXPECT().Excute(gomock.Any()).Return(mr, nil)
+			msh.EXPECT().Excute(gomock.Any(), gomock.Any(), gomock.Any(), false).Return(mr, nil)
 			var repo = UserRepository{SqlHandler: msh}
-			if err := repo.Store(user); (err != nil) != tt.wantErr {
+			if err := repo.Store(tt.args.u); (err != nil) != tt.wantErr {
 				t.Errorf("UserRepository.Store() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -106,20 +105,34 @@ func TestUserRepository_FindAll(t *testing.T) {
 		fields  fields
 		want    []domain.User
 		wantErr bool
+		prepare func(msh *mock_db.MockSqlHandler, mr *mock_db.MockRow)
 	}{
 		{
 			name:    "1st",
 			want:    nil,
 			wantErr: false,
+			prepare: func(msh *mock_db.MockSqlHandler, mr *mock_db.MockRow) {
+				msh.EXPECT().Query(gomock.Any(), false).Return(mr, nil)
+				mr.EXPECT().Next().Return(false)
+			},
 		},
+		// {
+		// 	name:    "2st",
+		// 	want:    []domain.User{{ID: 1, Name: "test", Balance: 0, IsDeleted: false}},
+		// 	wantErr: false,
+		// 	prepare: func(msh *mock_db.MockSqlHandler, mr *mock_db.MockRow) {
+		// 		msh.EXPECT().Query(gomock.Any()).Return(mr, nil)
+		// 		mr.EXPECT().Next().Return(true)
+
+		// 	},
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			msh := mock_db.NewMockSqlHandler(ctrl)
 			mr := mock_db.NewMockRow(ctrl)
-			msh.EXPECT().Query(gomock.Any()).Return(mr, nil)
-			mr.EXPECT().Next().Return(false)
+			tt.prepare(msh, mr)
 			repo := UserRepository{
 				SqlHandler: msh,
 			}
