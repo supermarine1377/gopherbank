@@ -1,4 +1,4 @@
-//go:generate  -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOPACKAGE/$GOFILE
+//go:generate mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/mock_$GOFILE
 package usecase
 
 import "supermarine1377/domain"
