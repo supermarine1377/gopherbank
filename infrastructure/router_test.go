@@ -3,10 +3,10 @@ package infrastructure_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"supermarine1377/domain"
 	"supermarine1377/infrastructure"
 
-	"supermarine1377/interface/controller"
-	mock_db "supermarine1377/interface/db/mock"
+	"supermarine1377/infrastructure/mock"
 
 	"testing"
 
@@ -17,25 +17,16 @@ func TestPingHandler(t *testing.T) {
 	tests := []struct {
 		name       string
 		method     string
-		prepare    func(ctrl *gomock.Controller) *controller.UserController
 		statusCode int
 	}{
 		{
-			name:   "GET",
-			method: "GET",
-			prepare: func(ctrl *gomock.Controller) *controller.UserController {
-				msh := mock_db.NewMockSqlHandler(ctrl)
-				return controller.NewUserController(msh)
-			},
+			name:       "GET",
+			method:     "GET",
 			statusCode: http.StatusOK,
 		},
 		{
-			name:   "POST",
-			method: "POST",
-			prepare: func(ctrl *gomock.Controller) *controller.UserController {
-				msh := mock_db.NewMockSqlHandler(ctrl)
-				return controller.NewUserController(msh)
-			},
+			name:       "POST",
+			method:     "POST",
 			statusCode: http.StatusMethodNotAllowed,
 		},
 	}
@@ -43,7 +34,7 @@ func TestPingHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var (
 				ctrl = gomock.NewController(t)
-				uc   = tt.prepare(ctrl)
+				uc   = mock.NewMockUserController(ctrl)
 				ro   = infrastructure.NewRouter(uc)
 			)
 			var (
@@ -61,23 +52,43 @@ func TestPingHandler(t *testing.T) {
 }
 
 func TestUserHandler(t *testing.T) {
-	type fields struct {
-		userController controller.UserController
-	}
-	type args struct {
-		rw http.ResponseWriter
-		r  *http.Request
-	}
 	tests := []struct {
-		name   string
-		fields fields
-		args   args
+		name       string
+		method     string
+		param      interface{}
+		prepare    func(*mock.MockUserController, domain.User)
+		res        domain.User
+		statusCode int
 	}{
-		// TODO: Add test cases.
+		{
+			name:   "GET",
+			method: "GET",
+			param:  1,
+			prepare: func(c *mock.MockUserController, u domain.User) {
+				c.EXPECT().FindById(1).Return(&u, nil)
+			},
+			statusCode: 200,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			var (
+				ctrl = gomock.NewController(t)
+				uc   = mock.NewMockUserController(ctrl)
+				ro   = infrastructure.NewRouter(uc)
+			)
+			rec := httptest.NewRecorder()
+			var req *http.Request
+			if tt.method == "GET" {
+				tt.prepare(uc, tt.res)
+				req = httptest.NewRequest(tt.method, "/user/1", nil)
+			}
+			ro.UserHandler(rec, req)
 
+			result := rec.Result()
+			if result.StatusCode != tt.statusCode {
+				t.Errorf("unexpected status code %d, expected %d", result.StatusCode, tt.statusCode)
+			}
 		})
 	}
 }

@@ -2,7 +2,7 @@ package infrastructure
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
 	"net/http"
 	"supermarine1377/interface/controller"
 )
@@ -15,8 +15,8 @@ func Run() {
 		r  = NewRouter(uc)
 	)
 	useRouter(r)
+	fmt.Println("gopherbank started!")
 	http.ListenAndServe(":8080", nil)
-	log.Printf("listening...")
 }
 
 func connectDB() (*SqlHandler, *sql.DB) {

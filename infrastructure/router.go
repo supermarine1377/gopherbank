@@ -1,27 +1,20 @@
-//go:generate mockgen -source=$GOFILE -package=mock -destination=./mock/mock_$GOFILE
 package infrastructure
 
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
 	"supermarine1377/domain"
-	"supermarine1377/interface/controller"
 )
 
 type Router struct {
-	userController controller.UserController
+	userController UserController
 }
 
-type IRouter interface {
-	PingHandler(w io.Writer, r io.Reader)
-}
-
-func NewRouter(uc *controller.UserController) *Router {
-	return &Router{userController: *uc}
+func NewRouter(uc UserController) *Router {
+	return &Router{userController: uc}
 }
 
 func (ro *Router) PingHandler(rw http.ResponseWriter, r *http.Request) {
