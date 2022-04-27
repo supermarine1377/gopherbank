@@ -56,7 +56,7 @@ func (ro *Router) UserHandler(rw http.ResponseWriter, r *http.Request) {
 		}
 		rw.WriteHeader(http.StatusCreated)
 	default:
-		rw.WriteHeader(http.StatusMethodNotAllowed)
+		rw.WriteHeader(http.StatusNotImplemented)
 	}
 }
 

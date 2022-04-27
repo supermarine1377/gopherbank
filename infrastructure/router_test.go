@@ -3,6 +3,7 @@ package infrastructure_test
 import (
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"supermarine1377/domain"
 	"supermarine1377/infrastructure"
 
@@ -55,19 +56,40 @@ func TestUserHandler(t *testing.T) {
 	tests := []struct {
 		name       string
 		method     string
-		param      interface{}
-		prepare    func(*mock.MockUserController, domain.User)
+		prepare    func(*mock.MockUserController, *domain.User)
+		req        string
 		res        domain.User
 		statusCode int
 	}{
 		{
-			name:   "GET",
+			name:   "GET (successful)",
 			method: "GET",
-			param:  1,
-			prepare: func(c *mock.MockUserController, u domain.User) {
-				c.EXPECT().FindById(1).Return(&u, nil)
+			prepare: func(muc *mock.MockUserController, u *domain.User) {
+				muc.EXPECT().FindById(1).Return(u, nil)
 			},
-			statusCode: 200,
+			statusCode: http.StatusOK,
+		},
+		{
+			name:   "POST (sucessful)",
+			method: "POST",
+			req: `{
+				"name": "gopher",
+				"balance": 10000
+			}`,
+			prepare: func(muc *mock.MockUserController, u *domain.User) {
+				muc.EXPECT().Add(gomock.Any()).Return(nil)
+			},
+			statusCode: http.StatusCreated,
+		},
+		{
+			name:       "PUT",
+			method:     "PUT",
+			statusCode: http.StatusNotImplemented,
+		},
+		{
+			name:       "DELETE",
+			method:     "DELETE",
+			statusCode: http.StatusNotImplemented,
 		},
 	}
 	for _, tt := range tests {
@@ -79,10 +101,18 @@ func TestUserHandler(t *testing.T) {
 			)
 			rec := httptest.NewRecorder()
 			var req *http.Request
-			if tt.method == "GET" {
-				tt.prepare(uc, tt.res)
-				req = httptest.NewRequest(tt.method, "/user/1", nil)
+			switch tt.method {
+			case "GET":
+				tt.prepare(uc, &tt.res)
+				req = httptest.NewRequest("GET", "/user/1", nil)
+			case "POST":
+				tt.prepare(uc, nil)
+				reqBody := strings.NewReader(tt.req)
+				req = httptest.NewRequest("POST", "/user", reqBody)
+			default:
+				req = httptest.NewRequest(tt.method, "/user", nil)
 			}
+
 			ro.UserHandler(rec, req)
 
 			result := rec.Result()
