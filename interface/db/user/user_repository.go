@@ -33,7 +33,7 @@ func (repo UserRepository) FindById(id int) (*domain.User, error) {
 		}
 		return &user, nil
 	}
-	return nil, domain.UserNotFoundErr(id)
+	return nil, domain.ErrUserNotFound(id)
 }
 
 func (repo UserRepository) FindAll() ([]domain.User, error) {

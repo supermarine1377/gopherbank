@@ -65,7 +65,18 @@ func TestUserHandler(t *testing.T) {
 			prepare: func(muc *mock.MockUserController, u *domain.User) {
 				muc.EXPECT().FindById(1).Return(u, nil)
 			},
+			res: domain.User{
+				Name: "gopher",
+			},
 			statusCode: http.StatusOK,
+		},
+		{
+			name:   "GET (Not found)",
+			method: "GET",
+			prepare: func(muc *mock.MockUserController, u *domain.User) {
+				muc.EXPECT().FindById(1).Return(u, domain.ErrUserNotFound(1))
+			},
+			statusCode: http.StatusNotFound,
 		},
 		{
 			name:   "POST (sucessful)",
@@ -78,6 +89,18 @@ func TestUserHandler(t *testing.T) {
 				muc.EXPECT().Add(gomock.Any()).Return(nil)
 			},
 			statusCode: http.StatusCreated,
+		},
+		{
+			name:   "POST (invalid balance)",
+			method: "POST",
+			req: `{
+				"name": "gopher",
+				"balance": -10000
+			}`,
+			prepare: func(muc *mock.MockUserController, u *domain.User) {
+				muc.EXPECT().Add(gomock.Any()).Return(domain.ErrInvalidUserCreateReq)
+			},
+			statusCode: http.StatusBadRequest,
 		},
 		{
 			name:       "PUT",

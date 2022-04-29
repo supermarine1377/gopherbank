@@ -5,10 +5,16 @@ import (
 	"fmt"
 )
 
+// インフラストラクチャ層の関数が返すエラー
 var (
-	InternalServerErr = errors.New("Internal server error")
+	ErrInternalServer = errors.New("Internal server error")
 )
 
-func UserNotFoundErr(userId int) error {
+// インターフェース層の関数が返すエラー
+var (
+	ErrInvalidUserCreateReq = errors.New("Invalid user registration request")
+)
+
+func ErrUserNotFound(userId int) error {
 	return fmt.Errorf("User id = %d not found", userId)
 }

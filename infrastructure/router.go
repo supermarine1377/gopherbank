@@ -38,7 +38,7 @@ func (ro *Router) UserHandler(rw http.ResponseWriter, r *http.Request) {
 		}
 		user, err := ro.userController.FindById(id)
 		if err != nil {
-			if err.Error() == domain.UserNotFoundErr(id).Error() {
+			if err.Error() == domain.ErrUserNotFound(id).Error() {
 				rw.WriteHeader(http.StatusNotFound)
 			} else {
 				rw.WriteHeader(http.StatusInternalServerError)
@@ -50,11 +50,15 @@ func (ro *Router) UserHandler(rw http.ResponseWriter, r *http.Request) {
 		var user domain.User
 		dec := json.NewDecoder(r.Body)
 		dec.Decode(&user)
-		if err := ro.userController.Add(user); err != nil {
+		err := ro.userController.Add(user)
+		switch err {
+		case nil:
+			rw.WriteHeader(http.StatusCreated)
+		case domain.ErrInvalidUserCreateReq:
+			rw.WriteHeader(http.StatusBadRequest)
+		default:
 			rw.WriteHeader(http.StatusInternalServerError)
-			return
 		}
-		rw.WriteHeader(http.StatusCreated)
 	default:
 		rw.WriteHeader(http.StatusNotImplemented)
 	}
