@@ -6,9 +6,7 @@ import (
 	"strings"
 	"supermarine1377/domain"
 	"supermarine1377/infrastructure"
-
 	"supermarine1377/infrastructure/mock"
-
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -118,6 +116,72 @@ func TestUserHandler(t *testing.T) {
 			result := rec.Result()
 			if result.StatusCode != tt.statusCode {
 				t.Errorf("unexpected status code %d, expected %d", result.StatusCode, tt.statusCode)
+			}
+		})
+	}
+}
+
+func TestUsersAllHandler(t *testing.T) {
+	tests := []struct {
+		name       string
+		method     string
+		prepare    func(*mock.MockUserController, []domain.User)
+		res        []domain.User
+		statusCode int
+	}{
+		{
+			name:   "get(successful)",
+			method: "GET",
+			prepare: func(muc *mock.MockUserController, u []domain.User) {
+				muc.EXPECT().FindAll().Return(u, nil)
+			},
+			res: []domain.User{
+				{
+					ID:      1,
+					Name:    "gopher1",
+					Balance: 100,
+				},
+				{
+					ID:      2,
+					Name:    "gopher2",
+					Balance: 100,
+				},
+			},
+			statusCode: http.StatusOK,
+		},
+		{
+			name:       "post",
+			method:     "POST",
+			statusCode: http.StatusNotImplemented,
+		},
+		{
+			name:       "put",
+			method:     "PUT",
+			statusCode: http.StatusNotImplemented,
+		},
+	}
+	for _, tt := range tests {
+		var (
+			ctrl = gomock.NewController(t)
+			muc  = mock.NewMockUserController(ctrl)
+			ro   = infrastructure.NewRouter(muc)
+		)
+		rec := httptest.NewRecorder()
+		var req *http.Request
+
+		switch tt.method {
+		case "GET":
+			req = httptest.NewRequest("GET", "/users", nil)
+			tt.prepare(muc, tt.res)
+		default:
+			req = httptest.NewRequest(tt.method, "/users", nil)
+		}
+
+		ro.UsersAllHandler(rec, req)
+		t.Run(tt.name, func(t *testing.T) {
+			result := rec.Result()
+			if result.StatusCode != tt.statusCode {
+				t.Errorf("error: unexpected stauts code %d, expected %d", result.StatusCode, tt.statusCode)
 			}
 		})
 	}

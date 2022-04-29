@@ -71,6 +71,6 @@ func (ro *Router) UsersAllHandler(rw http.ResponseWriter, r *http.Request) {
 		}
 		enc.Encode(&users)
 	default:
-		rw.WriteHeader(http.StatusMethodNotAllowed)
+		rw.WriteHeader(http.StatusNotImplemented)
 	}
 }
