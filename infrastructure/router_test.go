@@ -1,6 +1,9 @@
 package infrastructure_test
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -86,7 +89,7 @@ func TestUserHandler(t *testing.T) {
 				"balance": 10000
 			}`,
 			prepare: func(muc *mock.MockUserController, u *domain.User) {
-				muc.EXPECT().Add(gomock.Any()).Return(nil)
+				muc.EXPECT().Add(*u).Return(nil)
 			},
 			statusCode: http.StatusCreated,
 		},
@@ -98,7 +101,7 @@ func TestUserHandler(t *testing.T) {
 				"balance": -10000
 			}`,
 			prepare: func(muc *mock.MockUserController, u *domain.User) {
-				muc.EXPECT().Add(gomock.Any()).Return(domain.ErrInvalidUserCreateReq)
+				muc.EXPECT().Add(*u).Return(domain.ErrInvalidUserCreateReq)
 			},
 			statusCode: http.StatusBadRequest,
 		},
@@ -119,23 +122,27 @@ func TestUserHandler(t *testing.T) {
 				ctrl = gomock.NewController(t)
 				uc   = mock.NewMockUserController(ctrl)
 				ro   = infrastructure.NewRouter(uc)
+				rec  = httptest.NewRecorder()
+				req  *http.Request
 			)
-			rec := httptest.NewRecorder()
-			var req *http.Request
+
 			switch tt.method {
 			case "GET":
 				tt.prepare(uc, &tt.res)
 				req = httptest.NewRequest("GET", "/user/1", nil)
 			case "POST":
-				tt.prepare(uc, nil)
 				reqBody := strings.NewReader(tt.req)
-				req = httptest.NewRequest("POST", "/user", reqBody)
+				dec := json.NewDecoder(reqBody)
+				var user domain.User
+				dec.Decode(&user)
+				tt.prepare(uc, &user)
+				req = httptest.NewRequest("POST", "/user", bytes.NewBufferString(tt.req))
+				fmt.Println(req.Body)
 			default:
 				req = httptest.NewRequest(tt.method, "/user", nil)
 			}
 
 			ro.UserHandler(rec, req)
-
 			result := rec.Result()
 			if result.StatusCode != tt.statusCode {
 				t.Errorf("unexpected status code %d, expected %d", result.StatusCode, tt.statusCode)
