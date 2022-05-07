@@ -13,6 +13,6 @@ WORKDIR /api/app
 
 COPY . /api/app/
 
-CMD go run main.go
+CMD ["go", "run", "."]
 
 EXPOSE 8080

@@ -1,3 +1,5 @@
+[![Go](https://github.com/supermarine1377/gopherbank/actions/workflows/go.yml/badge.svg)](https://github.com/supermarine1377/gopherbank/actions/workflows/go.yml)
+
 # エンドポイント
 
 - GET /users

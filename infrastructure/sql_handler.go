@@ -25,7 +25,7 @@ type Transaction struct {
 }
 
 func NewSqlHandler() *SqlHandler {
-	comn, err := sql.Open("mysql", "root:password@tcp(127.0.0.1)/gopherbank")
+	comn, err := sql.Open("mysql", "root:password@tcp(gopher-db:3306)/gopherbank")
 	if err != nil {
 		panic(err)
 	}
