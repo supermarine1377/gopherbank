@@ -6,3 +6,6 @@ type User struct {
 	Balance   int    `json:"balance,omitempty"`
 	IsDeleted bool   `json:"is_deleted,omitempty"`
 }
+
+// todo: NewUser()実装
+// Balance < 0 はエラーを返す
