@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"os"
 	"supermarine1377/interface/controller"
 )
 
@@ -20,6 +21,7 @@ func Run() {
 }
 
 func connectDB() (*SqlHandler, *sql.DB) {
+	fmt.Println(os.Getenv("IS_ENV"))
 	var (
 		sql = NewSqlHandler()
 		db  = sql.Comn
