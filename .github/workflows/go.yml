@@ -16,7 +16,7 @@ jobs:
         - 3306:3306
         env:
           MYSQL_ROOT_PASSWORD: password
-          MYSQL_TABLE: gopherbank
+          MYSQL_DATABASE: gopherbank
         options: >-
           --health-cmd "mysqladmin ping"
           --health-interval 10s
