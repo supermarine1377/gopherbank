@@ -18,6 +18,6 @@ jobs:
     - name: Build
       run: go build -v ./...
     - name: Run docker-compose
-      run:  docker-compose build
+      run:  docker-compose up -d
     - name: Test
       run: go test -v ./...
