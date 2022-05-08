@@ -2,6 +2,8 @@ package infrastructure
 
 import (
 	"database/sql"
+	"flag"
+	"fmt"
 	"log"
 	"supermarine1377/interface/db"
 
@@ -25,7 +27,9 @@ type Transaction struct {
 }
 
 func NewSqlHandler() *SqlHandler {
-	comn, err := sql.Open("mysql", "root:password@tcp(gopher-db:3306)/gopherbank")
+	host := getHost()
+	dataSourceName := fmt.Sprintf("root:password@tcp(%s:3306)/gopherbank", host)
+	comn, err := sql.Open("mysql", dataSourceName)
 	if err != nil {
 		panic(err)
 	}
@@ -100,4 +104,12 @@ func (handler *SqlHandler) DoInTx(f func() (interface{}, error)) (interface{}, e
 		return nil, err
 	}
 	return r, nil
+}
+
+// docker-composeから起動した場合、"gopher-db"を返す
+// go run . で起動した場合、"localhost"を返す (CI/CDのテスト用)
+func getHost() string {
+	p := flag.String("db_host", "localhost", "MySQL host name")
+	flag.Parse()
+	return *p
 }

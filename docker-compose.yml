@@ -10,9 +10,8 @@ services:
       dockerfile: Dockerfile
     ports: 
       - 8080:8080
-    environment:
-    - IS_DEV=true
     tty: true
+    command: go run . -db_host=gopher-db
     depends_on:
       db:
         condition: service_healthy
